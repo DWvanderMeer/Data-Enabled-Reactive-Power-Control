@@ -99,7 +99,7 @@ p <- cowplot::plot_grid(p1,p2, align = "v", nrow = 2, rel_heights = c(1,1)) # 9.
 my.plot <- gridExtra::grid.arrange(p, legend, nrow = 2, ncol = 1, 
                         layout_matrix = rbind(1,2),heights = c(2.5, 0.3)) # widths = 2.7, 
 ggsave(filename = "~/Desktop/ACF.pdf", plot = my.plot, 
-       device = "pdf", units = "cm", height = 5.5, width = 8.5)
+       device = cairo_pdf, units = "cm", height = 5.5, width = 8.5)
 ################################################################################
 # Figure 3
 ################################################################################
@@ -145,25 +145,25 @@ for(dir in dirs){
   j <- j+1
 }
 iter_res <- do.call(rbind,iter_res)
-mydf <- melt(iter_res, id.vars = c("Run","Model","Time"))
+mydf <- tidyr::pivot_longer(iter_res, cols = -c("Run","Model","Time"))
 busVoltage_VV <- read.table("~/Desktop/case2/voltVar/busVoltage.txt")
 busVoltage_VV <- as.data.frame(t(apply(busVoltage_VV, 1, quantile, probs=c(0.01,0.99))))
 colnames(busVoltage_VV) <- c(0.01,0.99)
 busVoltage_VV$Time <- ts
-busVoltage_VV <- melt(busVoltage_VV,id.vars = "Time")
+busVoltage_VV <- tidyr::pivot_longer(busVoltage_VV, cols=-"Time")
 busVoltage_PF <- read.table("~/Desktop/case2/UnityPF/busVoltage.txt")
 busVoltage_PF <- as.data.frame(t(apply(busVoltage_PF, 1, quantile, probs=c(0.01,0.99))))
 colnames(busVoltage_PF) <- c(0.01,0.99)
 busVoltage_PF$Time <- ts
 busVoltage_PF <- melt(busVoltage_PF,id.vars = "Time")
-library(RColorBrewer)
+busVoltage_PF <- tidyr::pivot_longer(busVoltage_PF, cols = -"Time")
 p3 <- ggplot() + 
   geom_interval(data=mydf %>% filter(Model!="volt") %>% filter(Model!="unity") %>% mutate(across(Model, .fns = toupper)), aes(x=Time,y=value,colour=Model, group=Model),
                 intervals = 0.99, size=line.size) + # , show.legend = TRUE
   # geom_interval(data = busVoltage_PF, aes(x=Time,y=value,colour="pf1"),intervals = c(0.99),size=line.size) +
-  geom_fan(data = busVoltage_PF, aes(x=Time,y=value,quantile=as.numeric(as.character(variable)),fill="PF1"), alpha=0.25) + #
+  geom_fan(data = busVoltage_PF, aes(x=Time,y=value,quantile=as.numeric(as.character(name)),fill="PF1"), alpha=0.25) + #
   # geom_interval(data = busVoltage_VV, aes(x=Time,y=value,colour="voltvar"),intervals = c(0.99),size=line.size) +
-  geom_fan(data = busVoltage_VV, aes(x=Time,y=value,quantile=as.numeric(as.character(variable)),fill="VoltVar"), alpha=0.25) + #
+  geom_fan(data = busVoltage_VV, aes(x=Time,y=value,quantile=as.numeric(as.character(name)),fill="VoltVar"), alpha=0.25) + #
   facet_wrap(~Run) +
   xlab("Time (5 min.)") +
   ylab("Voltage (p.u.)") +
@@ -190,7 +190,7 @@ p3 <- ggplot() +
   scale_x_datetime(date_breaks = "6 hour",
                    date_labels = "%H:%M") 
 ggsave(filename = "~/Desktop/case2Voltages.pdf", plot = p3,
-       device = "pdf", units = "cm", height = 5, width = 17)
+       device = cairo_pdf, units = "cm", height = 5, width = 17)
 ################################################################################
 # Figure 4
 ################################################################################
@@ -265,8 +265,8 @@ p4 <- iter_res %>%
         strip.text = element_text(family = "Times", size=plot.size),
         strip.text.x = element_text(margin = margin(0.05,0,0.1,0, "lines")),
         panel.spacing = unit(0, "lines"))
-ggsave(filename = "~/Desktop/relativeContributionwithPSO.pdf", plot = p,
-       device = "pdf", units = "cm", height = 4, width = 17)
+ggsave(filename = "~/Desktop/relativeContributionwithPSO.pdf", plot = p4,
+       device = cairo_pdf, units = "cm", height = 4, width = 17)
 ################################################################################
 # Table I
 ################################################################################

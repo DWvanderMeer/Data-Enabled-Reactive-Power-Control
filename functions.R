@@ -7,9 +7,9 @@
 # candidate solutions are evaluated.
 
 obj <- function(Q){
-  V <- PF_opt(Q,n)                    # Where PF is a function that calls Matlab to solve
-  if (sum(V > 1.05 | V < 0.95) > 0) V_deviation <- Inf  # Did I add this the last time I worked
-  else V_deviation <- sum(abs(1-V))                     # on this (March 2020)?
+  V <- PF_opt(Q,n)                    # Where PF_opt is a function that calls Matlab to solve
+  if (sum(V > 1.05 | V < 0.95) > 0) V_deviation <- Inf  
+  else V_deviation <- sum(abs(1-V))                     
   V_deviation <- sum(abs(1-V)) # the power flow equations
   return(V_deviation)
 }
@@ -23,7 +23,7 @@ localRepair=function(eda, gen, pop, popEval, f, lower, upper) {
     if(sum(x==pop[i,])==length(lower)){
       popEval[i] <- popEval[i]
     } else {
-      popEval[i]=f(x) # If I changed a population member, I should re-evaluate the function
+      popEval[i]=f(x) # If a population member is changed, re-evaluate the function
     }
   }
   return(list(pop=pop,popEval=popEval))
@@ -40,7 +40,6 @@ edaSelectWithinBounds <- function (eda, gen, pop, popEval, lower, upper) {
 
   if (is.null(truncFactor)) truncFactor <- 0.3
 
-  # Mine:
   tmp <- data.frame(which(pop < upper & pop > lower, arr.ind = T))
   x <- rep(1:nrow(pop),each=length(lower))
   tmp <- tmp[order(match(tmp$row, x)),]
@@ -172,7 +171,7 @@ PF_ret <- function(Q,n) {
            % Store voltage values
            busVoltage(:,n) = complex(Vmag.*cos(delta), Vmag.*sin(delta) );
            currentV = complex(Vmag.*cos(delta), Vmag.*sin(delta) );
-           ") # The last line means I only take the voltage at DG nodes, I already did this before Hamed told me to.
+           ") # The last line means: only take the voltage at DG nodes
   V <- getVariable(matlab, "currentV"); V <- Re(V$currentV) # This is now a vector of real numbers
   V <- V/4160 
   return(V)
@@ -182,7 +181,7 @@ PF_ret <- function(Q,n) {
 PF_opt <- function(Q,n) {
   setVariable(matlab, n=n)
   setVariable(matlab, Qopt=Q)
-  evaluate(matlab, # I need to insert the optimized Qopt in Qgen for DG nodes only.
+  evaluate(matlab, # Insert the optimized Qopt in Qgen for DG nodes only.
            "
            Qgen = zeros(size(idx'));
            Qgen(idx) = Qopt;
@@ -290,7 +289,7 @@ PF_opt <- function(Q,n) {
            busVoltage(:,n) = complex(Vmag.*cos(delta), Vmag.*sin(delta) );
            currentV = complex(Vmag.*cos(delta), Vmag.*sin(delta) );
            currentV = currentV(idx,1);
-           ") # The last line means I only take the voltage at DG nodes, I already did this before Hamed told me to.
+           ") # The last line means: only take the voltage at DG nodes
   V <- getVariable(matlab, "currentV"); V <- Re(V$currentV) # This is now a vector of real numbers
   V <- V/4160 
   return(V)
@@ -321,9 +320,6 @@ myEdaRun <- function (eda, f, lower, upper, n, prevPop, prevPopEval) { # Define 
       # i <- which.min(popEval) # Added this on 2020-05-13
       # bestEval[gen,1] <- popEval[i]
     } else if(gen == 1 && n > 1){
-      # What if I mix it up. I takea 50% from prevPop and 50% from edaSeed
-      # and combine them to form a new population
-      
       # Select the top 30%/2 from the entire previous population
       pop <- prevPop # Extract pop and popEval from the previous run
       popEval <- prevPopEval
@@ -383,7 +379,7 @@ myEdaRun <- function (eda, f, lower, upper, n, prevPop, prevPopEval) { # Define 
       #   if(sum(x==selectedPop[i,])==length(lower)){
       #     selectedEval[i] <- selectedEval[i]
       #   } else {
-      #     selectedEval[i]=f(x) # If I changed a population member, I should re-evaluate the function
+      #     selectedEval[i]=f(x) # If a population member is changed, should re-evaluate the function
       #   }
       # }
       
@@ -408,7 +404,7 @@ myEdaRun <- function (eda, f, lower, upper, n, prevPop, prevPopEval) { # Define 
     
     terminate <- edaTerminate(eda, gen, fEvals, pop, popEval)
     
-    if (is.na(bestEval) || min(popEval) < bestEval) { # Commented this on 2020-05-13
+    if (is.na(bestEval) || min(popEval) < bestEval) { 
       i <- which.min(popEval)
       # bestEval <- popEval[i]
       bestSol <- pop[i, ]
@@ -432,7 +428,7 @@ myEdaRun <- function (eda, f, lower, upper, n, prevPop, prevPopEval) { # Define 
   
   result
 }
-# Run the following when n==1 becayse there's no previous population
+# Run the following when n==1 because there's no previous population
 initialEdaRun <- function (eda, f, lower, upper) {
   gen <- 0
   terminate <- FALSE
@@ -469,7 +465,7 @@ initialEdaRun <- function (eda, f, lower, upper) {
       #   if(sum(x==selectedPop[i,])==length(lower)){
       #     selectedEval[i] <- selectedEval[i]
       #   } else {
-      #     selectedEval[i]=f(x) # If I changed a population member, I should re-evaluate the function
+      #     selectedEval[i]=f(x) # If a population member is changed, re-evaluate the function
       #   }
       # }
       

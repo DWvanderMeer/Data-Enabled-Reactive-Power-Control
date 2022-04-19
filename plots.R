@@ -247,6 +247,7 @@ p4 <- iter_res %>%
   dplyr::filter(Model!="voltvar") %>%
   tidyr::pivot_longer(cols = -Model) %>%
   dplyr::mutate(name=factor(name, levels = c(18,56,48,250,66,79,300,450,83,95))) %>%
+  dplyr::mutate(Model=toupper(Model)) %>%
   ggplot(data = ., mapping = aes(x=name,y=value,colour=Model)) +
   geom_boxplot(outlier.size = point.size, size=line.size+0.05) +
   scale_colour_manual(values = c("aquamarine3","blue1","darkorange1")) +
